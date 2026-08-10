@@ -1,0 +1,6 @@
+# Features & Requirements
+
+* **Gameplay:** The game features a grid-based puzzle board where arrows of different colors occupy one or more grid cells. Arrows can move only in the exact direction they point, and an arrow can exit the board only when every grid cell between the arrow and the corresponding board edge is completely empty. Upon tapping an arrow, it will slide out smoothly, removing the arrow and its occupied grid cells. The player must tap arrows in the correct order to remove them, and the game continues until all arrows are removed.
+* **Level Selection:** The game has a Level Selection Screen where users can choose from the 100 pre-defined levels in order to start playing.
+* **Level Complete Screen:** Upon completing a level, the game transitions to a Level Complete Screen where users can unlock new levels and continue playing.
+* **Settings Screen:** The game includes a Settings Screen where users can customize various settings such as level difficulty, sound, and controller options.
