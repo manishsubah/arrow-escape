@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../models/progress_model.dart';
+import 'package:arrow_puzzle/data/models/progress_model.dart';
 
 /// Persists and retrieves level progress using SharedPreferences.
 class ProgressService {

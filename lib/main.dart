@@ -82,7 +82,7 @@ class _ArrowEscapeAppState extends State<ArrowEscapeApp> {
     return MaterialApp(
       title: 'Arrow Escape',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.theme,
       initialRoute: '/',
       onGenerateRoute: (settings) {
         final name = settings.name;

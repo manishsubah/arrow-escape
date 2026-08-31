@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../../data/repositories/level_repository.dart';
-import '../../../../data/models/progress_model.dart';
+import 'package:arrow_puzzle/data/repositories/level_repository.dart';
+import 'package:arrow_puzzle/data/models/progress_model.dart';
 
 /// Manages level list state and progress data.
 class LevelSelectionViewModel extends ChangeNotifier {

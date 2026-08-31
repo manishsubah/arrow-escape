@@ -36,6 +36,12 @@ flutter_launcher_icons:
 flutter:
   uses-material-design: true
 
+  # google_mobile_ads (and its transitive webview_flutter_wkwebview dependency)
+  # is integrated via CocoaPods, so keep Swift Package Manager off for iOS/macOS
+  # to avoid the mixed-integration pod install failure.
+  config:
+    enable-swift-package-manager: false
+
   assets:
     - assets/data/
     - assets/sounds/

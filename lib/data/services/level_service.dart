@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 
-import '../models/level_model.dart';
+import 'package:arrow_puzzle/data/models/level_model.dart';
 
 /// Loads and parses level data from the bundled JSON asset.
 class LevelService {

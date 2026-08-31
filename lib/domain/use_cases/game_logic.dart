@@ -1,5 +1,5 @@
-import '../models/arrow.dart';
-import '../models/game_state.dart';
+import 'package:arrow_puzzle/domain/models/arrow.dart';
+import 'package:arrow_puzzle/domain/models/game_state.dart';
 
 /// Core game logic for the Arrow Escape puzzle.
 ///

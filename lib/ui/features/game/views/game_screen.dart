@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../../../../data/repositories/level_repository.dart';
-import '../../../../data/services/ad_service.dart';
-import '../../../../data/services/audio_service.dart';
-import '../view_models/game_view_model.dart';
-import 'widgets/puzzle_grid.dart';
+import 'package:arrow_puzzle/data/repositories/level_repository.dart';
+import 'package:arrow_puzzle/data/services/ad_service.dart';
+import 'package:arrow_puzzle/data/services/audio_service.dart';
+import 'package:arrow_puzzle/ui/core/skeuo.dart';
+import 'package:arrow_puzzle/ui/core/widgets/chunky_button.dart';
+import 'package:arrow_puzzle/ui/core/widgets/skeuo_panel.dart';
+import 'package:arrow_puzzle/ui/features/game/view_models/game_view_model.dart';
+import 'package:arrow_puzzle/ui/features/game/views/widgets/puzzle_grid.dart';
 
 /// The main game screen displaying the puzzle board.
 class GameScreen extends StatefulWidget {
@@ -126,22 +129,14 @@ class _GameScreenState extends State<GameScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-          ),
-        ),
+        decoration: const BoxDecoration(gradient: Skeuo.backgroundGradient),
         child: SafeArea(
           child: ListenableBuilder(
             listenable: _viewModel,
             builder: (context, _) {
               if (_viewModel.isLoading) {
                 return const Center(
-                  child: CircularProgressIndicator(
-                    color: Color(0xFF3B82F6),
-                  ),
+                  child: CircularProgressIndicator(color: Skeuo.green),
                 );
               }
               return Column(
@@ -182,9 +177,13 @@ class _GameScreenState extends State<GameScreen>
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          _CircleActionButton(
-            icon: Icons.arrow_back_rounded,
+          ChunkyButton(
+            color: Skeuo.orange,
+            radius: 18,
+            lipDepth: 5,
+            padding: const EdgeInsets.all(10),
             onTap: () => Navigator.of(context).pop(),
+            child: const Icon(Icons.arrow_back_rounded, size: 22),
           ),
           const SizedBox(width: 12),
           AnimatedBuilder(
@@ -218,9 +217,10 @@ class _GameScreenState extends State<GameScreen>
                       child: Icon(
                         isFilled ? Icons.favorite : Icons.favorite_border,
                         color: isFilled
-                            ? const Color(0xFFEF4444)
-                            : const Color(0xFF64748B),
+                            ? Skeuo.heart
+                            : Skeuo.inkSoft.withValues(alpha: 0.5),
                         size: 26,
+                        shadows: isFilled ? Skeuo.embossedText : null,
                       ),
                     ),
                   ),
@@ -229,29 +229,23 @@ class _GameScreenState extends State<GameScreen>
             ),
           ),
           const Spacer(),
-          Container(
+          SkeuoPanel(
+            radius: 18,
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1E293B),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: const Color(0xFF64748B).withValues(alpha: 0.3),
-              ),
-            ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.change_history_rounded,
+                const Icon(
+                  Icons.grid_view_rounded,
                   size: 16,
-                  color: const Color(0xFF06B6D4).withValues(alpha: 0.9),
+                  color: Skeuo.blue,
                 ),
                 const SizedBox(width: 6),
                 Text(
                   '${_viewModel.totalArrows - _viewModel.remainingArrows} / ${_viewModel.totalArrows}',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: const Color(0xFFF8FAFC),
-                        fontWeight: FontWeight.w600,
+                        color: Skeuo.ink,
+                        fontWeight: FontWeight.w700,
                         fontSize: 14,
                       ),
                 ),
@@ -269,24 +263,27 @@ class _GameScreenState extends State<GameScreen>
       child: Row(
         children: [
           Expanded(
-            child: _BottomBarButton(
+            child: _ActionButton(
               icon: Icons.lightbulb_rounded,
-              iconColor: const Color(0xFFF59E0B),
               label: 'Hint',
+              // Pale yellow face, so the label is cocoa rather than white.
+              color: Skeuo.yellow,
+              foregroundColor: Skeuo.ink,
               onTap: _viewModel.isGameOver ? null : _onHintTap,
             ),
           ),
           const SizedBox(width: 16),
           Expanded(
-            child: _BottomBarButton(
+            child: _ActionButton(
               icon: Icons.refresh_rounded,
-              iconColor: const Color(0xFFF8FAFC),
               label: 'Reload',
-              onTap: _viewModel.isGameOver ? null : () {
-                _previousHearts = GameViewModel.maxHearts;
-                _viewModel.restart();
-              },
-              filled: true,
+              color: Skeuo.blue,
+              onTap: _viewModel.isGameOver
+                  ? null
+                  : () {
+                      _previousHearts = GameViewModel.maxHearts;
+                      _viewModel.restart();
+                    },
             ),
           ),
         ],
@@ -295,91 +292,44 @@ class _GameScreenState extends State<GameScreen>
   }
 }
 
-class _CircleActionButton extends StatelessWidget {
-  const _CircleActionButton({
+/// A labelled chunky button for the game's bottom action bar.
+class _ActionButton extends StatelessWidget {
+  const _ActionButton({
     required this.icon,
-    this.onTap,
-  });
-
-  final IconData icon;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1E293B).withValues(alpha: 0.8),
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: const Color(0xFF64748B).withValues(alpha: 0.3),
-          ),
-        ),
-        child: Icon(
-          icon,
-          color: const Color(0xFFF8FAFC),
-          size: 20,
-        ),
-      ),
-    );
-  }
-}
-
-class _BottomBarButton extends StatelessWidget {
-  const _BottomBarButton({
-    required this.icon,
-    required this.iconColor,
     required this.label,
+    required this.color,
+    this.foregroundColor = Skeuo.onCandy,
     this.onTap,
-    this.filled = false,
   });
 
   final IconData icon;
-  final Color iconColor;
   final String label;
+  final Color color;
+  final Color foregroundColor;
   final VoidCallback? onTap;
-  final bool filled;
 
   @override
   Widget build(BuildContext context) {
-    final isEnabled = onTap != null;
-    return GestureDetector(
+    return ChunkyButton(
+      color: color,
+      foregroundColor: foregroundColor,
+      radius: 24,
+      lipDepth: 6,
+      height: 50,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        height: 48,
-        decoration: BoxDecoration(
-          color: filled
-              ? const Color(0xFF1E293B).withValues(alpha: isEnabled ? 0.9 : 0.4)
-              : const Color(0xFF1E293B).withValues(alpha: isEnabled ? 0.6 : 0.3),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: const Color(0xFF64748B).withValues(alpha: 0.3),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 22),
+          const SizedBox(width: 8),
+          // No explicit color: the label inherits the button's foreground
+          // (and its disabled dimming) from ChunkyButton's DefaultTextStyle.
+          Text(
+            label,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
           ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              color: isEnabled
-                  ? iconColor
-                  : iconColor.withValues(alpha: 0.3),
-              size: 20,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Color(0xFFF8FAFC)
-                        .withValues(alpha: isEnabled ? 1.0 : 0.3),
-                    fontWeight: FontWeight.w500,
-                  ),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }

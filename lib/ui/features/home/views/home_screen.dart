@@ -2,6 +2,9 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import 'package:arrow_puzzle/ui/core/skeuo.dart';
+import 'package:arrow_puzzle/ui/core/widgets/chunky_button.dart';
+
 /// Home screen with game title, play button, and settings access.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -24,7 +27,7 @@ class _HomeScreenState extends State<HomeScreen>
       duration: const Duration(milliseconds: 2000),
       vsync: this,
     )..repeat(reverse: true);
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.08).animate(
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.06).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
 
@@ -50,115 +53,65 @@ class _HomeScreenState extends State<HomeScreen>
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF0F172A),
-              Color(0xFF1E293B),
-            ],
-          ),
-        ),
+        decoration: const BoxDecoration(gradient: Skeuo.backgroundGradient),
         child: SafeArea(
           child: Stack(
             children: [
-              // Background floating arrows decoration
               ..._buildFloatingArrows(),
-              // Main content
               Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Spacer(flex: 2),
-                    // Logo
+                    // Bouncy logo badge
                     AnimatedBuilder(
                       animation: _floatAnimation,
-                      builder: (context, child) {
-                        return Transform.translate(
-                          offset: Offset(0, _floatAnimation.value),
-                          child: child,
-                        );
-                      },
-                      child: Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF3B82F6), Color(0xFF06B6D4)],
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF3B82F6)
-                                  .withValues(alpha: 0.3),
-                              blurRadius: 24,
-                              spreadRadius: 4,
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.navigation_rounded,
-                          size: 48,
-                          color: Color(0xFFF8FAFC),
-                        ),
+                      builder: (context, child) => Transform.translate(
+                        offset: Offset(0, _floatAnimation.value),
+                        child: child,
                       ),
+                      child: _buildLogo(),
                     ),
-                    const SizedBox(height: 24),
-                    // Title
+                    const SizedBox(height: 28),
+                    _buildTitle(context),
+                    const SizedBox(height: 10),
                     Text(
-                      'Arrow Escape',
-                      style:
-                          Theme.of(context).textTheme.displayMedium?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 1.5,
-                              ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Tap. Slide. Escape.',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: const Color(0xFF64748B),
-                            letterSpacing: 3,
+                      'Tap • Slide • Escape',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: Skeuo.inkSoft,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 1,
                           ),
                     ),
                     const Spacer(flex: 2),
                     // Play button
                     ScaleTransition(
                       scale: _pulseAnimation,
-                      child: SizedBox(
-                        width: 220,
-                        height: 56,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.of(context).pushNamed('/levels');
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF3B82F6),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(28),
+                      child: ChunkyButton(
+                        color: Skeuo.green,
+                        width: 240,
+                        radius: 30,
+                        lipDepth: 9,
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        onTap: () =>
+                            Navigator.of(context).pushNamed('/levels'),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.play_arrow_rounded, size: 32),
+                            const SizedBox(width: 8),
+                            Text(
+                              'PLAY',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineSmall
+                                  ?.copyWith(
+                                    color: Skeuo.onCandy,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 1.5,
+                                  ),
                             ),
-                            elevation: 8,
-                            shadowColor: const Color(0xFF3B82F6)
-                                .withValues(alpha: 0.5),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.play_arrow_rounded, size: 28),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Play',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleLarge
-                                    ?.copyWith(
-                                      color: const Color(0xFFF8FAFC),
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                              ),
-                            ],
-                          ),
+                          ],
                         ),
                       ),
                     ),
@@ -168,23 +121,15 @@ class _HomeScreenState extends State<HomeScreen>
               ),
               // Settings button
               Positioned(
-                top: 16,
+                top: 12,
                 right: 16,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1E293B).withValues(alpha: 0.8),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: const Color(0xFF64748B).withValues(alpha: 0.3),
-                    ),
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.settings_rounded),
-                    color: const Color(0xFFF8FAFC),
-                    onPressed: () {
-                      Navigator.of(context).pushNamed('/settings');
-                    },
-                  ),
+                child: ChunkyButton(
+                  color: Skeuo.orange,
+                  radius: 18,
+                  lipDepth: 6,
+                  padding: const EdgeInsets.all(12),
+                  onTap: () => Navigator.of(context).pushNamed('/settings'),
+                  child: const Icon(Icons.settings_rounded, size: 24),
                 ),
               ),
             ],
@@ -194,9 +139,70 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  /// Builds decorative floating arrow icons in the background.
+  Widget _buildLogo() {
+    return Container(
+      width: 120,
+      height: 120,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Skeuo.lighten(Skeuo.blue, 0.25), Skeuo.blue],
+        ),
+        border: Border.all(color: Skeuo.darken(Skeuo.blue, 0.30), width: 4),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.22),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      foregroundDecoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.center,
+          colors: [
+            Colors.white.withValues(alpha: 0.5),
+            Colors.white.withValues(alpha: 0.0),
+          ],
+        ),
+      ),
+      child: const Icon(
+        Icons.navigation_rounded,
+        size: 56,
+        color: Colors.white,
+      ),
+    );
+  }
+
+  Widget _buildTitle(BuildContext context) {
+    final style = Theme.of(context).textTheme.displaySmall?.copyWith(
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1,
+        );
+    return Stack(
+      children: [
+        // Outline / sticker edge
+        Text(
+          'Arrow Escape',
+          style: style?.copyWith(
+            foreground: Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 6
+              ..color = Colors.white,
+          ),
+        ),
+        Text('Arrow Escape', style: style?.copyWith(color: Skeuo.ink)),
+      ],
+    );
+  }
+
+  /// Builds decorative floating candy arrows in the background.
   List<Widget> _buildFloatingArrows() {
-    final random = Random(42); // Fixed seed for consistent layout
+    final random = Random(42);
     const arrowIcons = [
       Icons.arrow_upward_rounded,
       Icons.arrow_downward_rounded,
@@ -204,18 +210,17 @@ class _HomeScreenState extends State<HomeScreen>
       Icons.arrow_forward_rounded,
     ];
     const colors = [
-      Color(0xFF3B82F6),
-      Color(0xFF06B6D4),
-      Color(0xFFEF4444),
-      Color(0xFF22C55E),
-      Color(0xFFF59E0B),
+      Skeuo.blue,
+      Skeuo.green,
+      Skeuo.red,
+      Skeuo.purple,
+      Skeuo.orange,
     ];
 
     return List.generate(12, (i) {
-      final top = random.nextDouble() * 0.8;
-      final left = random.nextDouble() * 0.9;
-      final size = 20.0 + random.nextDouble() * 20;
-      final opacity = 0.05 + random.nextDouble() * 0.08;
+      final top = random.nextDouble() * 0.85;
+      final left = random.nextDouble() * 0.88;
+      final size = 22.0 + random.nextDouble() * 22;
 
       return Positioned(
         top: MediaQuery.of(context).size.height * top,
@@ -232,7 +237,7 @@ class _HomeScreenState extends State<HomeScreen>
           child: Icon(
             arrowIcons[i % arrowIcons.length],
             size: size,
-            color: colors[i % colors.length].withValues(alpha: opacity),
+            color: colors[i % colors.length].withValues(alpha: 0.28),
           ),
         ),
       );

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../../data/repositories/level_repository.dart';
-import '../../../../data/services/audio_service.dart';
-import '../../../../domain/models/arrow.dart';
-import '../../../../domain/models/game_state.dart';
-import '../../../../domain/models/level.dart';
-import '../../../../domain/use_cases/game_logic.dart';
+import 'package:arrow_puzzle/data/repositories/level_repository.dart';
+import 'package:arrow_puzzle/data/services/audio_service.dart';
+import 'package:arrow_puzzle/domain/models/arrow.dart';
+import 'package:arrow_puzzle/domain/models/game_state.dart';
+import 'package:arrow_puzzle/domain/models/level.dart';
+import 'package:arrow_puzzle/domain/use_cases/game_logic.dart';
 
 /// Manages the active game state for a single level.
 class GameViewModel extends ChangeNotifier {

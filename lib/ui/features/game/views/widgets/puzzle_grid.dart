@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../domain/models/arrow.dart';
-import '../../../../../domain/models/game_state.dart';
-import 'arrow_widget.dart';
+import 'package:arrow_puzzle/domain/models/arrow.dart';
+import 'package:arrow_puzzle/domain/models/game_state.dart';
+import 'package:arrow_puzzle/ui/core/skeuo.dart';
+import 'package:arrow_puzzle/ui/features/game/views/widgets/arrow_widget.dart';
 
-/// Renders the puzzle grid with arrows.
+/// Renders the puzzle board: a wooden frame around a recessed well of carved
+/// cells, with the arrow blocks resting inside it.
 ///
-/// Uses a Stack with positioned ArrowWidgets overlaid on a grid background.
-/// Arrows animate out in their direction when removed.
+/// Uses a Stack with positioned ArrowWidgets overlaid on the well. The Stack is
+/// deliberately unclipped so a removed arrow slides out over the frame and off
+/// the board.
 class PuzzleGrid extends StatelessWidget {
   const PuzzleGrid({
     super.key,
@@ -24,6 +27,15 @@ class PuzzleGrid extends StatelessWidget {
   final void Function(Arrow) onArrowTap;
   final int? hintArrowId;
 
+  /// Wooden frame around the recessed well.
+  static const _framePad = 12.0;
+  static const _frameBorder = 3.0;
+  static const _frameRadius = 22.0;
+
+  /// Total space the frame takes out of the available box, plus a little
+  /// breathing room so the board never touches the screen edges.
+  static const _chrome = 2 * (_framePad + _frameBorder) + 8;
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -31,44 +43,53 @@ class PuzzleGrid extends StatelessWidget {
         final maxWidth = constraints.maxWidth;
         final maxHeight = constraints.maxHeight;
 
-        // Calculate cell size to fit the grid within constraints.
+        // Calculate cell size so the framed board fits within constraints.
         final cellSize = _calculateCellSize(maxWidth, maxHeight);
         final gridWidth = cellSize * gameState.cols;
         final gridHeight = cellSize * gameState.rows;
 
         return Center(
-          child: SizedBox(
-            width: gridWidth,
-            height: gridHeight,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                // Grid background
-                _GridBackground(
-                  rows: gameState.rows,
-                  cols: gameState.cols,
-                  cellSize: cellSize,
-                ),
-                // Arrows
-                ...gameState.remainingArrows.map((arrow) {
-                  final isExiting = exitingArrow?.id == arrow.id;
-                  final isRemovable =
-                      removableArrows.any((a) => a.id == arrow.id);
-                  final isHinted = hintArrowId == arrow.id;
-
-                  return _AnimatedArrow(
-                    key: ValueKey(arrow.id),
-                    arrow: arrow,
+          child: Container(
+            padding: const EdgeInsets.all(_framePad),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(_frameRadius),
+              gradient: Skeuo.woodGradient,
+              border: Border.all(color: Skeuo.woodEdge, width: _frameBorder),
+              boxShadow: Skeuo.lift(y: 12, blur: 26, alpha: 0.30),
+            ),
+            child: SizedBox(
+              width: gridWidth,
+              height: gridHeight,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  // Recessed well with carved cells
+                  _BoardWell(
+                    rows: gameState.rows,
+                    cols: gameState.cols,
                     cellSize: cellSize,
-                    gridRows: gameState.rows,
-                    gridCols: gameState.cols,
-                    isExiting: isExiting,
-                    isRemovable: isRemovable,
-                    isHinted: isHinted,
-                    onTap: () => onArrowTap(arrow),
-                  );
-                }),
-              ],
+                  ),
+                  // Arrows
+                  ...gameState.remainingArrows.map((arrow) {
+                    final isExiting = exitingArrow?.id == arrow.id;
+                    final isRemovable =
+                        removableArrows.any((a) => a.id == arrow.id);
+                    final isHinted = hintArrowId == arrow.id;
+
+                    return _AnimatedArrow(
+                      key: ValueKey(arrow.id),
+                      arrow: arrow,
+                      cellSize: cellSize,
+                      gridRows: gameState.rows,
+                      gridCols: gameState.cols,
+                      isExiting: isExiting,
+                      isRemovable: isRemovable,
+                      isHinted: isHinted,
+                      onTap: () => onArrowTap(arrow),
+                    );
+                  }),
+                ],
+              ),
             ),
           ),
         );
@@ -77,17 +98,18 @@ class PuzzleGrid extends StatelessWidget {
   }
 
   double _calculateCellSize(double maxWidth, double maxHeight) {
-    final horizontalCellSize = (maxWidth - 32) / gameState.cols;
-    final verticalCellSize = (maxHeight - 32) / gameState.rows;
+    final horizontalCellSize = (maxWidth - _chrome) / gameState.cols;
+    final verticalCellSize = (maxHeight - _chrome) / gameState.rows;
     return horizontalCellSize < verticalCellSize
         ? horizontalCellSize
         : verticalCellSize;
   }
 }
 
-/// Draws the grid lines and cell backgrounds.
-class _GridBackground extends StatelessWidget {
-  const _GridBackground({
+/// Draws the sunken well the arrow blocks sit in, with one carved dimple per
+/// cell.
+class _BoardWell extends StatelessWidget {
+  const _BoardWell({
     required this.rows,
     required this.cols,
     required this.cellSize,
@@ -101,13 +123,13 @@ class _GridBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomPaint(
       size: Size(cellSize * cols, cellSize * rows),
-      painter: _GridPainter(rows: rows, cols: cols, cellSize: cellSize),
+      painter: _BoardWellPainter(rows: rows, cols: cols, cellSize: cellSize),
     );
   }
 }
 
-class _GridPainter extends CustomPainter {
-  _GridPainter({
+class _BoardWellPainter extends CustomPainter {
+  _BoardWellPainter({
     required this.rows,
     required this.cols,
     required this.cellSize,
@@ -119,14 +141,40 @@ class _GridPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Cell background
-    final cellPaint = Paint()
-      ..color = const Color(0xFF1E293B).withValues(alpha: 0.6);
+    final wellRR = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      const Radius.circular(10),
+    );
 
-    final borderPaint = Paint()
-      ..color = const Color(0xFF64748B).withValues(alpha: 0.2)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
+    canvas.drawRRect(wellRR, Paint()..color = Skeuo.woodInset);
+
+    // Inset shadow: a thick blurred stroke clipped to the well only bleeds
+    // inward, which is how you fake an inner shadow on a canvas.
+    canvas.save();
+    canvas.clipRRect(wellRR);
+    canvas.drawRRect(
+      wellRR.deflate(2),
+      Paint()
+        ..color = Colors.black.withValues(alpha: 0.32)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 9
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
+    );
+    canvas.restore();
+
+    _paintCells(canvas);
+  }
+
+  void _paintCells(Canvas canvas) {
+    final dimpleInset = cellSize * 0.07;
+    final dimpleRadius = Radius.circular(cellSize * 0.18);
+    final topShade = Skeuo.darken(Skeuo.woodInset, 0.24);
+    final bottomShade = Skeuo.darken(Skeuo.woodInset, 0.02);
+    final catchLight = Skeuo.lighten(
+      Skeuo.woodInset,
+      0.22,
+    ).withValues(alpha: 0.45);
+    final rimShade = Colors.black.withValues(alpha: 0.28);
 
     for (int r = 0; r < rows; r++) {
       for (int c = 0; c < cols; c++) {
@@ -135,16 +183,45 @@ class _GridPainter extends CustomPainter {
           r * cellSize,
           cellSize,
           cellSize,
+        ).deflate(dimpleInset);
+        final rrect = RRect.fromRectAndRadius(rect, dimpleRadius);
+
+        // Dark at the top, light at the bottom reads as a scooped hollow.
+        canvas.drawRRect(
+          rrect,
+          Paint()
+            ..shader = LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [topShade, bottomShade],
+            ).createShader(rect),
         );
-        final rrect = RRect.fromRectAndRadius(rect.deflate(1), const Radius.circular(4));
-        canvas.drawRRect(rrect, cellPaint);
-        canvas.drawRRect(rrect, borderPaint);
+
+        // Clipping the two offset strokes keeps each one on a single inner
+        // edge: shadow under the top rim, light along the bottom rim.
+        canvas.save();
+        canvas.clipRRect(rrect);
+        canvas.drawRRect(
+          rrect.shift(const Offset(0, 1.5)),
+          Paint()
+            ..color = rimShade
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.8,
+        );
+        canvas.drawRRect(
+          rrect.shift(const Offset(0, -1.5)),
+          Paint()
+            ..color = catchLight
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.6,
+        );
+        canvas.restore();
       }
     }
   }
 
   @override
-  bool shouldRepaint(_GridPainter oldDelegate) =>
+  bool shouldRepaint(_BoardWellPainter oldDelegate) =>
       rows != oldDelegate.rows ||
       cols != oldDelegate.cols ||
       cellSize != oldDelegate.cellSize;

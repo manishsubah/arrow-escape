@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import 'package:arrow_puzzle/ui/core/skeuo.dart';
+
 /// Animated splash screen with logo reveal.
 /// Auto-navigates to Home after a short delay.
 class SplashScreen extends StatefulWidget {
@@ -51,17 +53,7 @@ class _SplashScreenState extends State<SplashScreen>
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF0F172A),
-              Color(0xFF1E293B),
-              Color(0xFF0F172A),
-            ],
-          ),
-        ),
+        decoration: const BoxDecoration(gradient: Skeuo.backgroundGradient),
         child: Center(
           child: FadeTransition(
             opacity: _fadeAnimation,

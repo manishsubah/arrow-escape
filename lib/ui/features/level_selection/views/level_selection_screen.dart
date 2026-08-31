@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../../../../data/repositories/level_repository.dart';
-import '../view_models/level_selection_view_model.dart';
+import 'package:arrow_puzzle/data/repositories/level_repository.dart';
+import 'package:arrow_puzzle/ui/core/skeuo.dart';
+import 'package:arrow_puzzle/ui/core/widgets/chunky_button.dart';
+import 'package:arrow_puzzle/ui/core/widgets/skeuo_panel.dart';
+import 'package:arrow_puzzle/ui/core/widgets/skeuo_progress_bar.dart';
+import 'package:arrow_puzzle/ui/core/widgets/sticker_text.dart';
+import 'package:arrow_puzzle/ui/features/level_selection/view_models/level_selection_view_model.dart';
 
 /// Grid of level tiles showing completion/unlock state.
 class LevelSelectionScreen extends StatefulWidget {
@@ -37,13 +42,7 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-          ),
-        ),
+        decoration: const BoxDecoration(gradient: Skeuo.backgroundGradient),
         child: SafeArea(
           child: Column(
             children: [
@@ -56,32 +55,19 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
                   children: [
                     Row(
                       children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1E293B)
-                                .withValues(alpha: 0.8),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: const Color(0xFF64748B)
-                                  .withValues(alpha: 0.3),
-                            ),
-                          ),
-                          child: IconButton(
-                            icon: const Icon(Icons.arrow_back_rounded),
-                            color: const Color(0xFFF8FAFC),
-                            onPressed: () => Navigator.of(context).pop(),
+                        ChunkyButton(
+                          color: Skeuo.orange,
+                          radius: 18,
+                          lipDepth: 5,
+                          padding: const EdgeInsets.all(10),
+                          onTap: () => Navigator.of(context).pop(),
+                          child: const Icon(
+                            Icons.arrow_back_rounded,
+                            size: 22,
                           ),
                         ),
                         const SizedBox(width: 16),
-                        Text(
-                          'Mission Map',
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineMedium
-                              ?.copyWith(
-                                fontWeight: FontWeight.w700,
-                              ),
-                        ),
+                        const StickerText('Mission Map'),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -104,9 +90,7 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
                   builder: (context, _) {
                     if (_viewModel.isLoading) {
                       return const Center(
-                        child: CircularProgressIndicator(
-                          color: Color(0xFF3B82F6),
-                        ),
+                        child: CircularProgressIndicator(color: Skeuo.green),
                       );
                     }
                     return _buildLevelGrid(context);
@@ -131,47 +115,32 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
               Text(
                 'Completion: $percent%',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: const Color(0xFF64748B),
+                      color: Skeuo.inkSoft,
+                      fontWeight: FontWeight.w600,
                     ),
               ),
               const SizedBox(height: 8),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: _viewModel.completionPercent / 100,
-                  minHeight: 6,
-                  backgroundColor:
-                      const Color(0xFF64748B).withValues(alpha: 0.3),
-                  color: const Color(0xFF3B82F6),
-                ),
+              SkeuoProgressBar(
+                value: _viewModel.completionPercent / 100,
+                color: Skeuo.green,
               ),
             ],
           ),
         ),
         const SizedBox(width: 16),
-        Container(
+        SkeuoPanel(
+          radius: 18,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1E293B),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: const Color(0xFF64748B).withValues(alpha: 0.3),
-            ),
-          ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
-                Icons.star_rounded,
-                color: Color(0xFFF59E0B),
-                size: 20,
-              ),
+              const Icon(Icons.star_rounded, color: Skeuo.star, size: 20),
               const SizedBox(width: 6),
               Text(
-                '${_viewModel.totalStars} / ${_viewModel.totalLevels}',
+                '${_viewModel.totalStars} / ${_viewModel.totalLevels * 3}',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: const Color(0xFFF8FAFC),
-                      fontWeight: FontWeight.w600,
+                      color: Skeuo.ink,
+                      fontWeight: FontWeight.w700,
                       fontSize: 14,
                     ),
               ),
@@ -192,7 +161,7 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: crossAxisCount,
           crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
+          mainAxisSpacing: 14,
         ),
         itemCount: _viewModel.totalLevels,
         itemBuilder: (context, index) {
@@ -217,6 +186,9 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
   }
 }
 
+/// One level in the map: a chunky candy button whose face encodes its state —
+/// green with earned stars when cleared, blue when playable, grey plastic with
+/// a padlock while locked.
 class _LevelTile extends StatelessWidget {
   const _LevelTile({
     required this.levelId,
@@ -234,71 +206,49 @@ class _LevelTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color bgColor;
-    Color borderColor;
-    Color textColor;
-    Widget? icon;
+    final Color face;
+    final Widget? badge;
 
     if (isCompleted) {
-      bgColor = const Color(0xFF06B6D4).withValues(alpha: 0.2);
-      borderColor = const Color(0xFF06B6D4);
-      textColor = const Color(0xFF06B6D4);
-      icon = Row(
+      face = Skeuo.green;
+      badge = Row(
         mainAxisSize: MainAxisSize.min,
         children: List.generate(3, (i) {
           return Icon(
             i < stars ? Icons.star_rounded : Icons.star_outline_rounded,
-            color: const Color(0xFFF59E0B),
-            size: 10,
+            color: i < stars ? Skeuo.star : Colors.white.withValues(alpha: 0.5),
+            size: 11,
           );
         }),
       );
     } else if (isUnlocked) {
-      bgColor = const Color(0xFF3B82F6).withValues(alpha: 0.15);
-      borderColor = const Color(0xFF3B82F6);
-      textColor = const Color(0xFFF8FAFC);
+      face = Skeuo.blue;
+      badge = null;
     } else {
-      bgColor = const Color(0xFF1E293B).withValues(alpha: 0.5);
-      borderColor = const Color(0xFF64748B).withValues(alpha: 0.3);
-      textColor = const Color(0xFF64748B).withValues(alpha: 0.5);
-      icon = Icon(Icons.lock_rounded,
-          color: const Color(0xFF64748B).withValues(alpha: 0.4), size: 14);
+      face = Skeuo.muted;
+      badge = const Icon(Icons.lock_rounded, size: 13);
     }
 
-    return GestureDetector(
+    return ChunkyButton(
+      color: face,
+      // Locked tiles keep the padlock legible against grey plastic.
+      foregroundColor: isUnlocked ? Skeuo.onCandy : Skeuo.ink,
+      radius: 14,
+      lipDepth: 5,
+      padding: const EdgeInsets.all(2),
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: borderColor, width: 1.5),
-          boxShadow: isUnlocked && !isCompleted
-              ? [
-                  BoxShadow(
-                    color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : null,
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              '$levelId',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: textColor,
-                    fontWeight: FontWeight.w600,
-                  ),
-            ),
-            if (icon != null) ...[
-              const SizedBox(height: 2),
-              icon,
-            ],
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            '$levelId',
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+          ),
+          if (badge != null) ...[
+            const SizedBox(height: 1),
+            badge,
           ],
-        ),
+        ],
       ),
     );
   }

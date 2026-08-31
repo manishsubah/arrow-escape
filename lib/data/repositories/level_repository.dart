@@ -1,10 +1,10 @@
-import '../../domain/models/arrow.dart';
-import '../../domain/models/level.dart';
-import '../../ui/core/app_colors.dart';
-import '../models/level_model.dart';
-import '../models/progress_model.dart';
-import '../services/level_service.dart';
-import '../services/progress_service.dart';
+import 'package:arrow_puzzle/domain/models/arrow.dart';
+import 'package:arrow_puzzle/domain/models/level.dart';
+import 'package:arrow_puzzle/ui/core/app_colors.dart';
+import 'package:arrow_puzzle/data/models/level_model.dart';
+import 'package:arrow_puzzle/data/models/progress_model.dart';
+import 'package:arrow_puzzle/data/services/level_service.dart';
+import 'package:arrow_puzzle/data/services/progress_service.dart';
 
 /// Single source of truth for level data and user progress.
 class LevelRepository {

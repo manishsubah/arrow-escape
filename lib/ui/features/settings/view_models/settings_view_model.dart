@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../data/repositories/settings_repository.dart';
+import 'package:arrow_puzzle/data/repositories/settings_repository.dart';
 
 /// Manages settings state (sound, haptics).
 class SettingsViewModel extends ChangeNotifier {

@@ -1,5 +1,5 @@
-import '../services/audio_service.dart';
-import '../services/settings_service.dart';
+import 'package:arrow_puzzle/data/services/audio_service.dart';
+import 'package:arrow_puzzle/data/services/settings_service.dart';
 
 /// Repository for user settings with audio integration.
 class SettingsRepository {
