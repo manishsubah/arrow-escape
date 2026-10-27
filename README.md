@@ -46,6 +46,7 @@ the board if its path is clear. If something blocks it, you lose a heart.
 - Progress, stars and best scores saved on the device
 - Sound effects and haptics, each with an on/off switch
 - Works fully offline, with no account or backend
+- First-launch welcome screen with how-to-play and Terms/Privacy agreement
 - Built-in Privacy Policy, Terms of Service and open-source licenses
 - Interstitial ads (Google AdMob) with GDPR/UK consent through Google UMP
 
@@ -84,7 +85,7 @@ lib/
 └── ui/
     ├── core/                 # Theme, palette (skeuo.dart), shared widgets
     └── features/             # One folder per screen: views + view models
-        ├── splash/  home/  level_selection/  game/
+        ├── splash/  onboarding/  home/  level_selection/  game/
         ├── level_complete/  level_failed/
         ├── settings/  legal/
 assets/

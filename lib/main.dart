@@ -14,6 +14,7 @@ import 'ui/features/home/views/home_screen.dart';
 import 'ui/features/level_complete/views/level_complete_screen.dart';
 import 'ui/features/level_failed/views/level_failed_screen.dart';
 import 'ui/features/level_selection/views/level_selection_screen.dart';
+import 'ui/features/onboarding/views/onboarding_screen.dart';
 import 'ui/features/settings/views/settings_screen.dart';
 import 'ui/features/splash/views/splash_screen.dart';
 
@@ -50,7 +51,6 @@ class _ArrowEscapeAppState extends State<ArrowEscapeApp> {
     _audioService = AudioService();
     _settingsService = SettingsService();
     _adService = AdService();
-    _adService.initialize();
 
     _levelRepository = LevelRepository(
       levelService: _levelService,
@@ -68,6 +68,11 @@ class _ArrowEscapeAppState extends State<ArrowEscapeApp> {
   Future<void> _loadSettings() async {
     await _settingsRepository.getSoundEnabled();
     await _settingsRepository.getHapticsEnabled();
+    // Ads (and their consent form) wait until the user has accepted the
+    // terms; otherwise onboarding starts them via onAccepted.
+    if (await _settingsRepository.hasAcceptedCurrentTerms()) {
+      _adService.initialize();
+    }
   }
 
   @override
@@ -96,7 +101,18 @@ class _ArrowEscapeAppState extends State<ArrowEscapeApp> {
         if (name == '/') {
           return MaterialPageRoute(
             settings: settings,
-            builder: (_) => const SplashScreen(),
+            builder: (_) =>
+                SplashScreen(settingsRepository: _settingsRepository),
+          );
+        }
+
+        if (name == '/onboarding') {
+          return MaterialPageRoute(
+            settings: settings,
+            builder: (_) => OnboardingScreen(
+              settingsRepository: _settingsRepository,
+              onAccepted: _adService.initialize,
+            ),
           );
         }
 

@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import 'package:arrow_puzzle/data/repositories/settings_repository.dart';
 import 'package:arrow_puzzle/ui/core/skeuo.dart';
 
 /// Animated splash screen with logo reveal.
-/// Auto-navigates to Home after a short delay.
+/// After a short delay, goes to onboarding until the current terms are
+/// accepted, and to Home afterwards.
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  const SplashScreen({super.key, required this.settingsRepository});
+
+  final SettingsRepository settingsRepository;
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -34,11 +38,18 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/home');
-      }
-    });
+    _navigateWhenReady();
+  }
+
+  Future<void> _navigateWhenReady() async {
+    final results = await Future.wait([
+      widget.settingsRepository.hasAcceptedCurrentTerms(),
+      Future<void>.delayed(const Duration(seconds: 2)),
+    ]);
+    if (!mounted) return;
+    final accepted = results.first as bool;
+    Navigator.of(context)
+        .pushReplacementNamed(accepted ? '/home' : '/onboarding');
   }
 
   @override

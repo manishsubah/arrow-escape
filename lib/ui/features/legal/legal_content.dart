@@ -97,8 +97,9 @@ class LegalContent {
     sections: [
       LegalSection(
         'Acceptance',
-        'By downloading or playing $_app you agree to these Terms. If you do '
-            'not agree, please uninstall the App. '
+        'You accept these Terms when you tick "I agree" on the welcome '
+            'screen the first time you open $_app, and by continuing to play. '
+            'If you do not agree, please uninstall the App. '
             'Last updated: ${AppInfo.legalLastUpdated}.',
       ),
       LegalSection(

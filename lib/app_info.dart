@@ -14,6 +14,10 @@ class AppInfo {
   static const String developerName = 'The Arrow Escape Team';
   static const String supportEmail = 'support@example.com';
 
+  /// Bump when the Terms or Privacy Policy change materially — players who
+  /// accepted an older version are asked to agree again on next launch.
+  static const int termsVersion = 1;
+
   /// Date the legal documents were last revised.
   static const String legalLastUpdated = 'October 27, 2026';
 }

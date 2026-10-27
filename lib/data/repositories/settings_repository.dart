@@ -1,3 +1,4 @@
+import 'package:arrow_puzzle/app_info.dart';
 import 'package:arrow_puzzle/data/services/audio_service.dart';
 import 'package:arrow_puzzle/data/services/settings_service.dart';
 
@@ -35,4 +36,14 @@ class SettingsRepository {
     _hapticsEnabled = value;
     await _settingsService.setHapticsEnabled(value);
   }
+
+  /// Whether the user has agreed to the current [AppInfo.termsVersion].
+  Future<bool> hasAcceptedCurrentTerms() async {
+    final accepted = await _settingsService.getAcceptedTermsVersion();
+    return accepted >= AppInfo.termsVersion;
+  }
+
+  /// Records agreement to the current Terms of Service and Privacy Policy.
+  Future<void> acceptCurrentTerms() =>
+      _settingsService.setAcceptedTermsVersion(AppInfo.termsVersion);
 }

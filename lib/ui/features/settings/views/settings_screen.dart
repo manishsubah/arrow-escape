@@ -5,6 +5,7 @@ import 'package:arrow_puzzle/app_info.dart';
 import 'package:arrow_puzzle/data/repositories/settings_repository.dart';
 import 'package:arrow_puzzle/data/services/ad_service.dart';
 import 'package:arrow_puzzle/ui/core/skeuo.dart';
+import 'package:arrow_puzzle/ui/core/widgets/candy_badge.dart';
 import 'package:arrow_puzzle/ui/core/widgets/chunky_button.dart';
 import 'package:arrow_puzzle/ui/core/widgets/skeuo_panel.dart';
 import 'package:arrow_puzzle/ui/core/widgets/sticker_text.dart';
@@ -186,7 +187,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       width: double.infinity,
       child: Column(
         children: [
-          const _CandyBadge(
+          const CandyBadge(
             icon: Icons.navigation_rounded,
             color: Skeuo.blue,
             size: 64,
@@ -253,7 +254,7 @@ class _SettingsTile extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       child: Row(
         children: [
-          _CandyBadge(icon: icon, color: iconColor),
+          CandyBadge(icon: icon, color: iconColor),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -312,7 +313,7 @@ class _LinkTile extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Row(
             children: [
-              _CandyBadge(icon: icon, color: iconColor, size: 36),
+              CandyBadge(icon: icon, color: iconColor, size: 36),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
@@ -339,45 +340,6 @@ class _LinkTile extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// A small glossy molded chip holding an icon — the raised-surface recipe at
-/// badge scale.
-class _CandyBadge extends StatelessWidget {
-  const _CandyBadge({required this.icon, required this.color, this.size = 44});
-
-  final IconData icon;
-  final Color color;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    final radius = BorderRadius.circular(size * 0.32);
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        borderRadius: radius,
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Skeuo.faceOf(color), color],
-        ),
-        border: Border.all(color: Skeuo.lipOf(color), width: 2),
-        boxShadow: Skeuo.lift(y: 4, blur: 8, alpha: 0.18),
-      ),
-      foregroundDecoration: BoxDecoration(
-        borderRadius: radius,
-        gradient: Skeuo.gloss(alpha: 0.42, stop: 0.5),
-      ),
-      child: Icon(
-        icon,
-        color: Skeuo.onCandy,
-        size: size * 0.5,
-        shadows: Skeuo.embossedText,
       ),
     );
   }
