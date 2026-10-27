@@ -30,8 +30,7 @@ class ProgressModel {
   int getBestScore(int levelId) => bestScores[levelId] ?? 0;
 
   /// Total stars earned across all levels.
-  int get totalStars =>
-      starRatings.values.fold(0, (sum, stars) => sum + stars);
+  int get totalStars => starRatings.values.fold(0, (sum, stars) => sum + stars);
 
   /// Number of completed levels.
   int get completedCount => completedLevelIds.length;

@@ -12,33 +12,42 @@ class ProgressService {
   static const _starRatingsKey = 'star_ratings';
 
   /// Loads progress from local storage.
+  ///
+  /// Stored values are untrusted (they can be corrupted or edited on rooted
+  /// devices), so malformed entries are skipped instead of crashing the app.
   Future<ProgressModel> loadProgress() async {
     final prefs = await SharedPreferences.getInstance();
-    final completedList = prefs.getStringList(_completedKey) ?? [];
+    final completed = (prefs.getStringList(_completedKey) ?? [])
+        .map(int.tryParse)
+        .whereType<int>()
+        .where((id) => id > 0)
+        .toSet();
     final highest = prefs.getInt(_highestKey) ?? 1;
 
-    // Load best scores map
-    final bestScoresJson = prefs.getString(_bestScoresKey);
-    Map<int, int> bestScores = {};
-    if (bestScoresJson != null) {
-      final decoded = json.decode(bestScoresJson) as Map<String, dynamic>;
-      bestScores = decoded.map((k, v) => MapEntry(int.parse(k), v as int));
-    }
-
-    // Load star ratings map
-    final starRatingsJson = prefs.getString(_starRatingsKey);
-    Map<int, int> starRatings = {};
-    if (starRatingsJson != null) {
-      final decoded = json.decode(starRatingsJson) as Map<String, dynamic>;
-      starRatings = decoded.map((k, v) => MapEntry(int.parse(k), v as int));
-    }
-
     return ProgressModel(
-      completedLevelIds: completedList.map(int.parse).toSet(),
-      highestUnlockedLevel: highest,
-      bestScores: bestScores,
-      starRatings: starRatings,
+      completedLevelIds: completed,
+      highestUnlockedLevel: highest < 1 ? 1 : highest,
+      bestScores: _decodeIntMap(prefs.getString(_bestScoresKey)),
+      starRatings: _decodeIntMap(
+        prefs.getString(_starRatingsKey),
+      ).map((k, v) => MapEntry(k, v.clamp(0, 3))),
     );
+  }
+
+  Map<int, int> _decodeIntMap(String? raw) {
+    if (raw == null) return {};
+    try {
+      final decoded = json.decode(raw);
+      if (decoded is! Map) return {};
+      final result = <int, int>{};
+      decoded.forEach((k, v) {
+        final key = int.tryParse(k.toString());
+        if (key != null && v is int && v >= 0) result[key] = v;
+      });
+      return result;
+    } on FormatException {
+      return {};
+    }
   }
 
   /// Saves progress to local storage.
@@ -51,13 +60,15 @@ class ProgressService {
     await prefs.setInt(_highestKey, progress.highestUnlockedLevel);
 
     // Save best scores
-    final bestScoresMap =
-        progress.bestScores.map((k, v) => MapEntry(k.toString(), v));
+    final bestScoresMap = progress.bestScores.map(
+      (k, v) => MapEntry(k.toString(), v),
+    );
     await prefs.setString(_bestScoresKey, json.encode(bestScoresMap));
 
     // Save star ratings
-    final starRatingsMap =
-        progress.starRatings.map((k, v) => MapEntry(k.toString(), v));
+    final starRatingsMap = progress.starRatings.map(
+      (k, v) => MapEntry(k.toString(), v),
+    );
     await prefs.setString(_starRatingsKey, json.encode(starRatingsMap));
   }
 }

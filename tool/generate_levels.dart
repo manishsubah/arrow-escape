@@ -1,5 +1,5 @@
 // Level generator script for Arrow Escape.
-// Run with: dart run lib/generate_levels.dart
+// Run with: dart run tool/generate_levels.dart
 // Generates assets/data/levels.json with 100 solvable levels.
 
 import 'dart:convert';

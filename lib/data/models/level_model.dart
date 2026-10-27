@@ -28,13 +28,13 @@ class ArrowModel {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'row': row,
-        'col': col,
-        'direction': direction,
-        'length': length,
-        'colorIndex': colorIndex,
-      };
+    'id': id,
+    'row': row,
+    'col': col,
+    'direction': direction,
+    'length': length,
+    'colorIndex': colorIndex,
+  };
 }
 
 /// Raw JSON-mapped model for a level definition.
@@ -61,8 +61,9 @@ class LevelModel {
       arrows: (json['arrows'] as List<dynamic>)
           .map((a) => ArrowModel.fromJson(a as Map<String, dynamic>))
           .toList(),
-      solution:
-          (json['solution'] as List<dynamic>).map((s) => s as int).toList(),
+      solution: (json['solution'] as List<dynamic>)
+          .map((s) => s as int)
+          .toList(),
     );
   }
 }

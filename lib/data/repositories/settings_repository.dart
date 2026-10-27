@@ -6,11 +6,17 @@ class SettingsRepository {
   SettingsRepository({
     required SettingsService settingsService,
     required AudioService audioService,
-  })  : _settingsService = settingsService,
-        _audioService = audioService;
+  }) : _settingsService = settingsService,
+       _audioService = audioService;
 
   final SettingsService _settingsService;
   final AudioService _audioService;
+
+  bool _hapticsEnabled = true;
+
+  /// Last known haptics preference, readable synchronously (e.g. when a
+  /// route is built). Updated by [getHapticsEnabled]/[setHapticsEnabled].
+  bool get hapticsEnabled => _hapticsEnabled;
 
   Future<bool> getSoundEnabled() async {
     final enabled = await _settingsService.getSoundEnabled();
@@ -24,10 +30,12 @@ class SettingsRepository {
   }
 
   Future<bool> getHapticsEnabled() async {
-    return _settingsService.getHapticsEnabled();
+    _hapticsEnabled = await _settingsService.getHapticsEnabled();
+    return _hapticsEnabled;
   }
 
   Future<void> setHapticsEnabled(bool value) async {
+    _hapticsEnabled = value;
     await _settingsService.setHapticsEnabled(value);
   }
 }

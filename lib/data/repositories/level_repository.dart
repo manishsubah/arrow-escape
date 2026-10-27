@@ -11,8 +11,8 @@ class LevelRepository {
   LevelRepository({
     required LevelService levelService,
     required ProgressService progressService,
-  })  : _levelService = levelService,
-        _progressService = progressService;
+  }) : _levelService = levelService,
+       _progressService = progressService;
 
   final LevelService _levelService;
   final ProgressService _progressService;

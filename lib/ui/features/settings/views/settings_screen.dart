@@ -1,20 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
+import 'package:arrow_puzzle/app_info.dart';
 import 'package:arrow_puzzle/data/repositories/settings_repository.dart';
+import 'package:arrow_puzzle/data/services/ad_service.dart';
 import 'package:arrow_puzzle/ui/core/skeuo.dart';
 import 'package:arrow_puzzle/ui/core/widgets/chunky_button.dart';
 import 'package:arrow_puzzle/ui/core/widgets/skeuo_panel.dart';
 import 'package:arrow_puzzle/ui/core/widgets/sticker_text.dart';
+import 'package:arrow_puzzle/ui/features/legal/legal_content.dart';
+import 'package:arrow_puzzle/ui/features/legal/views/legal_screen.dart';
 import 'package:arrow_puzzle/ui/features/settings/view_models/settings_view_model.dart';
 
-/// Settings screen with sound and haptics toggles.
+/// Settings screen with sound/haptics toggles plus legal & support links.
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({
     super.key,
     required this.settingsRepository,
+    required this.adService,
   });
 
   final SettingsRepository settingsRepository;
+  final AdService adService;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -26,8 +33,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    _viewModel =
-        SettingsViewModel(settingsRepository: widget.settingsRepository);
+    _viewModel = SettingsViewModel(
+      settingsRepository: widget.settingsRepository,
+      adService: widget.adService,
+    );
     _viewModel.load();
   }
 
@@ -48,8 +57,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               // Header
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 child: Row(
                   children: [
                     ChunkyButton(
@@ -97,8 +108,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             value: _viewModel.hapticsEnabled,
                             onChanged: (_) => _viewModel.toggleHaptics(),
                           ),
-                          const SizedBox(height: 32),
+                          const SizedBox(height: 28),
+                          _buildLegalSection(context),
+                          const SizedBox(height: 28),
                           _buildAboutCard(context),
+                          const SizedBox(height: 24),
                         ],
                       ),
                     );
@@ -109,6 +123,59 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildLegalSection(BuildContext context) {
+    return SkeuoPanel(
+      radius: 20,
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      width: double.infinity,
+      child: Column(
+        children: [
+          _LinkTile(
+            icon: Icons.privacy_tip_rounded,
+            iconColor: Skeuo.green,
+            title: 'Privacy Policy',
+            onTap: () => _openDocument(LegalContent.privacyPolicy),
+          ),
+          _LinkTile(
+            icon: Icons.gavel_rounded,
+            iconColor: Skeuo.orange,
+            title: 'Terms of Service',
+            onTap: () => _openDocument(LegalContent.termsOfService),
+          ),
+          if (_viewModel.privacyOptionsRequired)
+            _LinkTile(
+              icon: Icons.tune_rounded,
+              iconColor: Skeuo.purple,
+              title: 'Privacy Choices',
+              subtitle: 'Manage ad personalization consent',
+              onTap: _viewModel.openPrivacyChoices,
+            ),
+          _LinkTile(
+            icon: Icons.mail_rounded,
+            iconColor: Skeuo.blue,
+            title: 'Contact Support',
+            subtitle: AppInfo.supportEmail,
+            onTap: _copySupportEmail,
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openDocument(LegalDocument document) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => LegalScreen(document: document)));
+  }
+
+  Future<void> _copySupportEmail() async {
+    await Clipboard.setData(const ClipboardData(text: AppInfo.supportEmail));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Support email copied to clipboard')),
     );
   }
 
@@ -126,17 +193,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 16),
           StickerText(
-            'Arrow Escape',
+            AppInfo.appName,
             style: Theme.of(context).textTheme.titleLarge,
             outlineWidth: 4,
           ),
           const SizedBox(height: 6),
           Text(
-            'Version 1.0.0',
+            'Version ${AppInfo.version}',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Skeuo.inkSoft,
-                  fontWeight: FontWeight.w600,
-                ),
+              color: Skeuo.inkSoft,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 4),
+          // Required attribution for bundled open-source packages; kept
+          // low-key here rather than as a full row in the legal section.
+          TextButton(
+            onPressed: () => showLicensePage(
+              context: context,
+              applicationName: AppInfo.appName,
+              applicationVersion: AppInfo.version,
+            ),
+            style: TextButton.styleFrom(
+              foregroundColor: Skeuo.inkSoft,
+              textStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
+                decoration: TextDecoration.underline,
+              ),
+            ),
+            child: const Text('Open-source licenses'),
           ),
         ],
       ),
@@ -178,16 +262,16 @@ class _SettingsTile extends StatelessWidget {
                 Text(
                   title,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Skeuo.ink,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    color: Skeuo.ink,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Skeuo.inkSoft,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: Skeuo.inkSoft),
                 ),
               ],
             ),
@@ -199,14 +283,71 @@ class _SettingsTile extends StatelessWidget {
   }
 }
 
+/// A tappable row inside the legal section: badge, label, chevron.
+class _LinkTile extends StatelessWidget {
+  const _LinkTile({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.onTap,
+    this.subtitle,
+  });
+
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String? subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    // Transparent Material so the ink splash paints above the panel surface.
+    return Material(
+      type: MaterialType.transparency,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Row(
+            children: [
+              _CandyBadge(icon: icon, color: iconColor, size: 36),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: textTheme.titleMedium?.copyWith(
+                        color: Skeuo.ink,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    if (subtitle != null)
+                      Text(
+                        subtitle!,
+                        style: textTheme.bodySmall?.copyWith(
+                          color: Skeuo.inkSoft,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right_rounded, color: Skeuo.inkSoft),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// A small glossy molded chip holding an icon — the raised-surface recipe at
 /// badge scale.
 class _CandyBadge extends StatelessWidget {
-  const _CandyBadge({
-    required this.icon,
-    required this.color,
-    this.size = 44,
-  });
+  const _CandyBadge({required this.icon, required this.color, this.size = 44});
 
   final IconData icon;
   final Color color;

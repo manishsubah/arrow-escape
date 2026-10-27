@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'app_info.dart';
 import 'data/repositories/level_repository.dart';
 import 'data/repositories/settings_repository.dart';
 import 'data/services/ad_service.dart';
@@ -15,6 +16,9 @@ import 'ui/features/level_failed/views/level_failed_screen.dart';
 import 'ui/features/level_selection/views/level_selection_screen.dart';
 import 'ui/features/settings/views/settings_screen.dart';
 import 'ui/features/splash/views/splash_screen.dart';
+
+/// Number of bundled levels in assets/data/levels.json.
+const int totalLevels = 100;
 
 void main() {
   runApp(const ArrowEscapeApp());
@@ -38,9 +42,6 @@ class _ArrowEscapeAppState extends State<ArrowEscapeApp> {
   // Repositories
   late final LevelRepository _levelRepository;
   late final SettingsRepository _settingsRepository;
-
-  // Settings cache
-  bool _hapticsEnabled = true;
 
   @override
   void initState() {
@@ -67,7 +68,7 @@ class _ArrowEscapeAppState extends State<ArrowEscapeApp> {
 
   Future<void> _loadSettings() async {
     await _settingsRepository.getSoundEnabled();
-    _hapticsEnabled = await _settingsRepository.getHapticsEnabled();
+    await _settingsRepository.getHapticsEnabled();
   }
 
   @override
@@ -77,10 +78,18 @@ class _ArrowEscapeAppState extends State<ArrowEscapeApp> {
     super.dispose();
   }
 
+  /// Extracts the level id from `/game/7`, `/complete/7?steps=…` etc.,
+  /// clamped to the valid range so a bad route can't request a missing level.
+  int _parseLevelId(String routeName) {
+    final segments = Uri.parse(routeName).pathSegments;
+    final id = segments.isEmpty ? null : int.tryParse(segments.last);
+    return (id ?? 1).clamp(1, totalLevels);
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Arrow Escape',
+      title: AppInfo.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.theme,
       initialRoute: '/',
@@ -104,14 +113,13 @@ class _ArrowEscapeAppState extends State<ArrowEscapeApp> {
         if (name == '/levels') {
           return MaterialPageRoute(
             settings: settings,
-            builder: (_) => LevelSelectionScreen(
-              levelRepository: _levelRepository,
-            ),
+            builder: (_) =>
+                LevelSelectionScreen(levelRepository: _levelRepository),
           );
         }
 
         if (name != null && name.startsWith('/game/')) {
-          final levelId = int.tryParse(name.split('/').last.split('?').first) ?? 1;
+          final levelId = _parseLevelId(name);
           return MaterialPageRoute(
             settings: settings,
             builder: (_) => GameScreen(
@@ -119,13 +127,13 @@ class _ArrowEscapeAppState extends State<ArrowEscapeApp> {
               levelRepository: _levelRepository,
               audioService: _audioService,
               adService: _adService,
-              hapticsEnabled: _hapticsEnabled,
+              hapticsEnabled: _settingsRepository.hapticsEnabled,
             ),
           );
         }
 
         if (name != null && name.startsWith('/failed/')) {
-          final levelId = int.tryParse(name.split('/').last.split('?').first) ?? 1;
+          final levelId = _parseLevelId(name);
           return MaterialPageRoute(
             settings: settings,
             builder: (_) => LevelFailedScreen(levelId: levelId),
@@ -134,16 +142,17 @@ class _ArrowEscapeAppState extends State<ArrowEscapeApp> {
 
         if (name != null && name.startsWith('/complete/')) {
           final uri = Uri.parse(name);
-          final levelId = int.tryParse(uri.pathSegments.last) ?? 1;
+          final levelId = _parseLevelId(name);
           final steps = int.tryParse(uri.queryParameters['steps'] ?? '') ?? 0;
           final stars = int.tryParse(uri.queryParameters['stars'] ?? '') ?? 1;
-          final bestScore = int.tryParse(uri.queryParameters['best'] ?? '') ?? steps;
+          final bestScore =
+              int.tryParse(uri.queryParameters['best'] ?? '') ?? steps;
           final isNewBest = uri.queryParameters['newBest'] == 'true';
           return MaterialPageRoute(
             settings: settings,
             builder: (_) => LevelCompleteScreen(
               levelId: levelId,
-              totalLevels: 100,
+              totalLevels: totalLevels,
               steps: steps,
               stars: stars,
               bestScore: bestScore,
@@ -157,6 +166,7 @@ class _ArrowEscapeAppState extends State<ArrowEscapeApp> {
             settings: settings,
             builder: (_) => SettingsScreen(
               settingsRepository: _settingsRepository,
+              adService: _adService,
             ),
           );
         }
