@@ -29,8 +29,8 @@ flutter_launcher_icons:
   macos:
     generate: true
   image_path: assets/icons/app_icon_1024.png
-  adaptive_icon_background: "#0F172A"
-  adaptive_icon_foreground: assets/icons/app_icon_1024.png
+  adaptive_icon_background: assets/icons/app_icon_background.png
+  adaptive_icon_foreground: assets/icons/app_icon_foreground.png
   remove_alpha_ios: true
 
 flutter:
@@ -45,4 +45,6 @@ flutter:
   assets:
     - assets/data/
     - assets/sounds/
-    - assets/icons/
+    # Only the SVG is used at runtime (splash). The PNGs in assets/icons/ are
+    # build-time sources for flutter_launcher_icons and aren't bundled.
+    - assets/icons/app_icon.svg
