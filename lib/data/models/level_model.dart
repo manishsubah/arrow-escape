@@ -1,4 +1,4 @@
-/// Raw JSON-mapped model for an arrow within a level definition.
+
 class ArrowModel {
   const ArrowModel({
     required this.id,
@@ -37,7 +37,6 @@ class ArrowModel {
   };
 }
 
-/// Raw JSON-mapped model for a level definition.
 class LevelModel {
   const LevelModel({
     required this.id,

@@ -6,7 +6,7 @@ import 'package:arrow_puzzle/data/models/progress_model.dart';
 import 'package:arrow_puzzle/data/services/level_service.dart';
 import 'package:arrow_puzzle/data/services/progress_service.dart';
 
-/// Single source of truth for level data and user progress.
+// Single source of truth for level data and user progress.
 class LevelRepository {
   LevelRepository({
     required LevelService levelService,
@@ -43,10 +43,6 @@ class LevelRepository {
     return _toDomain(model);
   }
 
-  /// Marks a level as completed with step count.
-  /// Calculates stars: 3 = perfect (steps == solution length),
-  /// 2 = near-perfect (steps <= solution + 2), 1 = completed.
-  /// Returns a record with (stars, bestScore, isNewBest).
   Future<({int stars, int bestScore, bool isNewBest})> completeLevel(
     int levelId,
     int steps,
@@ -76,13 +72,11 @@ class LevelRepository {
     return (stars: stars, bestScore: bestScore, isNewBest: isNewBest);
   }
 
-  /// Whether a level is unlocked.
   Future<bool> isLevelUnlocked(int levelId) async {
     final progress = await getProgress();
     return progress.isUnlocked(levelId);
   }
 
-  /// Whether a level has been completed.
   Future<bool> isLevelCompleted(int levelId) async {
     final progress = await getProgress();
     return progress.isCompleted(levelId);

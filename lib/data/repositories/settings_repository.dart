@@ -13,9 +13,6 @@ class SettingsRepository {
   final AudioService _audioService;
 
   bool _hapticsEnabled = true;
-
-  /// Last known haptics preference, readable synchronously (e.g. when a
-  /// route is built). Updated by [getHapticsEnabled]/[setHapticsEnabled].
   bool get hapticsEnabled => _hapticsEnabled;
 
   Future<bool> getSoundEnabled() async {

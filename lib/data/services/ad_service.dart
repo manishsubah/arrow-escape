@@ -39,7 +39,6 @@ class AdService {
       (defaultTargetPlatform == TargetPlatform.iOS ||
           defaultTargetPlatform == TargetPlatform.android);
 
-  /// The interstitial ad unit for this platform/build, or null if none.
   static String? get _adUnitId {
     final isIos = defaultTargetPlatform == TargetPlatform.iOS;
     if (!kReleaseMode) {
@@ -49,8 +48,6 @@ class AdService {
     return id.isEmpty ? null : id;
   }
 
-  /// Gathers consent (shows the UMP form where legally required, e.g. EEA/UK),
-  /// then initializes the Mobile Ads SDK and preloads an ad.
   Future<void> initialize() async {
     if (!_isSupportedPlatform || _adUnitId == null) return;
     try {
@@ -81,8 +78,6 @@ class AdService {
     return completer.future;
   }
 
-  /// Whether the user must be offered a way to change their ad consent
-  /// (shown as "Privacy Choices" in Settings).
   Future<bool> isPrivacyOptionsRequired() async {
     if (!_isSupportedPlatform || _adUnitId == null) return false;
     try {

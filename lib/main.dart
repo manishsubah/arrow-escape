@@ -17,7 +17,6 @@ import 'ui/features/level_selection/views/level_selection_screen.dart';
 import 'ui/features/settings/views/settings_screen.dart';
 import 'ui/features/splash/views/splash_screen.dart';
 
-/// Number of bundled levels in assets/data/levels.json.
 const int totalLevels = 100;
 
 void main() {
@@ -78,8 +77,6 @@ class _ArrowEscapeAppState extends State<ArrowEscapeApp> {
     super.dispose();
   }
 
-  /// Extracts the level id from `/game/7`, `/complete/7?steps=…` etc.,
-  /// clamped to the valid range so a bad route can't request a missing level.
   int _parseLevelId(String routeName) {
     final segments = Uri.parse(routeName).pathSegments;
     final id = segments.isEmpty ? null : int.tryParse(segments.last);
